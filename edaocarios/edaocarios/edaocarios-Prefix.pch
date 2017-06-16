@@ -1,0 +1,40 @@
+//
+//  edaocarios-Prefix.pch
+//  edaocarios
+//
+//  Created by harry on 2017/5/10.
+//  Copyright © 2017年 edao. All rights reserved.
+//
+
+#ifndef edaocarios_Prefix_pch
+#define edaocarios_Prefix_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#endif /* edaocarios_Prefix_pch */
+
+
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+    #import "Masonry.h"
+    #import "UITableView+FDTemplateLayoutCell.h"
+    #import "Config.h"
+    #import "AFNetworking.h"
+    #import "UIImageView+WebCache.h"
+    #import "MBProgressHUD.h"
+    #import "SVProgressHUD.h"
+#endif
+
+#define ScreenHeight [[UIScreen mainScreen] bounds].size.height//获取屏幕高度，兼容性测试
+#define ScreenWidth [[UIScreen mainScreen] bounds].size.width//获取屏幕宽度，兼容性测试
+
+#define RGBA(r, g, b, a) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a];
+#define UIColorFromRGB(rgbValue) [UIColor \
+colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 \
+green:((float)((rgbValue & 0xFF00) >> 8))/255.0 \
+blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
+#define TencentSecretId @"AKIDJTO4btDnOkslPnDrVu63kaCblgNp53pP"
