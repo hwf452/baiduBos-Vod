@@ -101,6 +101,40 @@
 
     
 }
+
+//腾讯云端视频转码
+-(void)coverTencentCouldVideo:(NSString *)fileId{
+    
+    NSMutableDictionary *parameter =[NSMutableDictionary dictionary];
+    
+    [parameter setObject:fileId forKey:@"fileId"];
+    
+    
+    NSString *url=[NSString stringWithFormat:@"%@%@",IPSign,@"/weixinvod/getCoverTencentVodVideoByFileId"];
+    NSLog(@"url:%@",url);
+    
+    NSLog(@"parameter:%@",parameter);
+    
+    
+    [NetRequestClass NetRequestPOSTWithRequestURL:url WithParameter:parameter WithReturnValeuBlock:^(id returnValue) {
+        
+        
+        [self fetchValueSuccessWithDic:returnValue];
+        
+    } WithErrorCodeBlock:^(id errorCode) {
+        NSLog(@"%@", errorCode);
+        [self errorCodeWithDic:errorCode];
+        
+    } WithFailureBlock:^{
+        [self netFailure];
+        NSLog(@"网络异常");
+        
+    }];
+    
+    
+}
+
+
 #pragma 获取到正确的数据，对正确的数据进行处理
 -(void)fetchValueSuccessWithDic: (NSArray *) returnValue
 {

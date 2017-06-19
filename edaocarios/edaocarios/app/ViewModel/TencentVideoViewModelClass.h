@@ -20,4 +20,7 @@
 //获取腾讯云端单条视频
 -(void)getTencentCouldVideo:(NSString *)fileId;
 
+//腾讯云端视频转码
+-(void)coverTencentCouldVideo:(NSString *)fileId;
+
 @end

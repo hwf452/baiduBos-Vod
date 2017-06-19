@@ -228,7 +228,7 @@
     _btnEncode=({
         UIButton *btn =[UIButton new];
         [btn setTitleColor:UIColorFromRGB(0x0000ff) forState:UIControlStateNormal];
-        [btn setTitle:@"Encode(mvo视频转码mp4)" forState:UIControlStateNormal];
+        [btn setTitle:@"Encode(视频转码并上传到腾讯云端)" forState:UIControlStateNormal];
         btn.titleLabel.font=[UIFont boldSystemFontOfSize:15];
         [self.view addSubview:btn];
         
@@ -403,44 +403,44 @@
 
 - (void)pickVideoBtnClick:(id)sender
 {
-//    if (_hasVideo)
-//    {
-//        _mp4Path = nil;
-//        _videoURL = nil;
-//        _startDate = nil;
-//    }
-//    UIImagePickerController* pickerView = [[UIImagePickerController alloc] init];
-//    pickerView.sourceType = UIImagePickerControllerSourceTypeCamera;
-//    NSArray* availableMedia = [UIImagePickerController availableMediaTypesForSourceType:UIImagePickerControllerSourceTypeCamera];
-//    pickerView.mediaTypes = [NSArray arrayWithObject:availableMedia[1]];
-//    
-//    pickerView.videoQuality =_qualityType ;
-//    
-//    [self presentViewController:pickerView animated:YES completion:^{
-//        
-//    }];
-//    pickerView.videoMaximumDuration = 30;
-//    pickerView.delegate = self;
+    if (_hasVideo)
+    {
+        _mp4Path = nil;
+        _videoURL = nil;
+        _startDate = nil;
+    }
+    UIImagePickerController* pickerView = [[UIImagePickerController alloc] init];
+    pickerView.sourceType = UIImagePickerControllerSourceTypeCamera;
+    NSArray* availableMedia = [UIImagePickerController availableMediaTypesForSourceType:UIImagePickerControllerSourceTypeCamera];
+    pickerView.mediaTypes = [NSArray arrayWithObject:availableMedia[1]];
     
+    pickerView.videoQuality =_qualityType ;
     
-    
-    TencentTakeVideoViewController *tencentVideo=[TencentTakeVideoViewController new];
-    
-    //tencentVideo.mp4UrlBlock(NSString *mp4Url)
-    __weak __typeof(self) weakSelf = self;
-    tencentVideo.mp4UrlBlock = ^(NSString *mp4Url,UIImage *tencentCoverVideo){
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        
-        strongSelf.videoMp4 = mp4Url;
-        strongSelf.tencentCoverVideo=tencentCoverVideo;
-        //[self playVideo];
-        [self upLoadVideo];
-        NSLog(@"%@",mp4Url);
-    };
-    
-    [self.navigationController presentViewController:tencentVideo animated:YES completion:^{
+    [self presentViewController:pickerView animated:YES completion:^{
         
     }];
+    pickerView.videoMaximumDuration = 30;
+    pickerView.delegate = self;
+    
+    
+    
+//    TencentTakeVideoViewController *tencentVideo=[TencentTakeVideoViewController new];
+//    
+//    //tencentVideo.mp4UrlBlock(NSString *mp4Url)
+//    __weak __typeof(self) weakSelf = self;
+//    tencentVideo.mp4UrlBlock = ^(NSString *mp4Url,UIImage *tencentCoverVideo){
+//        __strong __typeof(weakSelf) strongSelf = weakSelf;
+//        
+//        strongSelf.videoMp4 = mp4Url;
+//        strongSelf.tencentCoverVideo=tencentCoverVideo;
+//        //[self playVideo];
+//        [self upLoadVideo];
+//        NSLog(@"%@",mp4Url);
+//    };
+//    
+//    [self.navigationController presentViewController:tencentVideo animated:YES completion:^{
+//        
+//    }];
     
 }
 
@@ -480,7 +480,12 @@
             // 录制生成的视频文件路径 TXVideoRecordListener 的 onRecordComplete 回调中可以获取
             param.videoPath = _videoMp4;
             // 录制生成的视频首帧预览图， TXVideoRecordListener 的 onRecordComplete 回调中可以获取，可以置为 nil
-            param.coverImage = _tencentCoverVideo;
+            if (_tencentCoverVideo) {
+                param.coverImage = _tencentCoverVideo;
+            }else{
+                param.coverImage = nil;
+            }
+            
             
             TXUGCPublish *_ugcPublish = [[TXUGCPublish alloc] init];
             _ugcPublish.delegate = self;                                 // 设置 TXVideoPublishListener 回调
@@ -506,6 +511,47 @@
         [self showProgress];
     
 }
+
+
+-(void)coverVideo:(NSString *)videoId{
+    
+    TencentVideoViewModelClass *tencentVideo=[[TencentVideoViewModelClass alloc] init];
+    
+    
+    
+    
+    [tencentVideo setBlockWithReturnBlock:^(id returnValue) {
+        
+        [self closeProgress];
+        
+        
+        
+        NSLog(@"%@",returnValue);
+        NSDictionary *dict = returnValue;
+        
+        
+        
+        
+    } WithErrorBlock:^(id errorCode) {
+        
+        [self closeProgress];
+        
+        
+    } WithFailureBlock:^{
+        
+        [self closeProgress];
+        
+        
+    }];
+    
+    
+    [tencentVideo coverTencentCouldVideo:videoId];
+    
+    [self showProgress];
+    
+}
+
+
 - (void) switchChanged:(id)sender
 {
     NSLog(@"switchChanged");
@@ -657,6 +703,27 @@
     _hasMp4 = YES;
     
     
+    //
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
+        // 主要方法
+        [assetLibrary assetForURL:_videoURLRecourse resultBlock:^(ALAsset *asset) {
+            NSDateFormatter* formater = [[NSDateFormatter alloc] init];
+            [formater setDateFormat:@"yyyy-MM-dd-HH:mm:ss"];
+            _movPath = [NSHomeDirectory() stringByAppendingFormat:@"/Documents/output-%@.MOV", [formater stringFromDate:[NSDate date]]];
+            
+            ALAssetRepresentation *rep = [asset defaultRepresentation];
+            Byte *buffer = (Byte*)malloc((unsigned long)rep.size);
+            NSUInteger buffered = [rep getBytes:buffer fromOffset:0.0 length:((unsigned long)rep.size) error:nil];
+            NSData *data = [NSData dataWithBytesNoCopy:buffer length:buffered freeWhenDone:YES];
+            [data writeToFile:_movPath atomically:YES];
+            _videoMp4=_movPath;
+            
+            [self upLoadVideo];
+            
+        } failureBlock:nil];
+        
+    });
     
 }
 
@@ -682,6 +749,8 @@
             NSLog(@"video saved with success.");
             NSLog(@"assetURL:%@",assetURL);
             _videoURL=assetURL;
+            _videoURLRecourse=assetURL;
+            
         }else
         {
             NSLog(@"while saving the video error:%@", error);
@@ -735,6 +804,7 @@
     NSLog(@"videoId:%@",result.videoId);
     NSLog(@"videoURL:%@",result.videoURL);
     NSLog(@"onPublishComplete:%@",result.coverURL);
+    [self coverVideo:result.videoId];
 }
 
 @end

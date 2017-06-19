@@ -24,9 +24,10 @@
 {
     UIImagePickerControllerQualityType                  _qualityType;
     NSString*                                           _mp4Quality;
-    
+    NSURL*                                              _videoURLRecourse;
     NSURL*                                              _videoURL;
     NSString*                                           _mp4Path;
+    NSString*                                           _movPath;
     
     //    UILabel*                                            _fileSize;
     //    UILabel*                                            _videoLen;
