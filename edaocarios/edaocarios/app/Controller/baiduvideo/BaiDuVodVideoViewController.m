@@ -36,7 +36,7 @@
     _bosConfig = [[BOSClientConfiguration alloc] init];
     _bosConfig.allowsCellularAccess=YES;
     //_bosConfig.region = [BCERegion region:BCERegionBJ];
-    _bosConfig.region = [BCERegion region:BCERegionGZ];
+    //_bosConfig.region = [BCERegion region:BCERegionGZ];
     //_bosConfig.endpoint = @"https://bj.bcebos.com";
     //_bosConfig.endpoint = @"https://bj.bcebos.com";
     _bosConfig.credentials = _credentials;
@@ -684,13 +684,14 @@
         [assetLibrary assetForURL:_videoURLRecourse resultBlock:^(ALAsset *asset) {
             NSDateFormatter* formater = [[NSDateFormatter alloc] init];
             [formater setDateFormat:@"yyyy-MM-dd-HH:mm:ss"];
-            _movPath = [NSHomeDirectory() stringByAppendingFormat:@"/Documents/output-%@.MOV", [formater stringFromDate:[NSDate date]]];
+            NSDate *date=[NSDate date];
+            _movPath = [NSHomeDirectory() stringByAppendingFormat:@"/Documents/output-%@.MOV", [formater stringFromDate:date]];
             
             ALAssetRepresentation *rep = [asset defaultRepresentation];
             Byte *buffer = (Byte*)malloc((unsigned long)rep.size);
             NSUInteger buffered = [rep getBytes:buffer fromOffset:0.0 length:((unsigned long)rep.size) error:nil];
             NSData *data = [NSData dataWithBytesNoCopy:buffer length:buffered freeWhenDone:YES];
-            [data writeToFile:_movPath atomically:YES];
+            //[data writeToFile:_movPath atomically:YES];
 
             //3.通过BOS上传媒资
             
@@ -706,11 +707,20 @@
             request.key = res.sourceKey;
             request.objectContent = content;
             
-            BCETask* task = [_bosClient putObject:request];
-            task.then(^(BCEOutput* output) {
+            _taskUploadVideo = [_bosClient putObject:request];
+            _taskUploadVideo.then(^(BCEOutput* output) {
+                
                 if (output.progress) {//正在上传
                     //处理相关业务逻辑
                     NSLog(@"put object progress is %@", output.progress);
+                    
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        NSNumber *num=output.progress;
+                        float num1=[num floatValue];
+                        _upLoadVideoProgress.text=[NSString stringWithFormat:@"%@%.1f",@"上传视频进度：%",num1];
+                    });
+
+                    
                 }
                 
                 if (output.response) {//上传成功
@@ -718,7 +728,7 @@
                     //BOSPutObjectResponse* response = (BOSPutObjectResponse*)output.response;
                     NSLog(@"put object success!");
                     //对已完成mediaID申请和视频上传的媒资进行管理。
-                    [self vodHandleMediaId:res key:[NSString stringWithFormat:@"output-%@.MOV",[formater stringFromDate:[NSDate date]]]];
+                    [self vodHandleMediaId:res key:[NSString stringWithFormat:@"output-%@.MOV",[formater stringFromDate:date]]];
                     
                 }
                 
@@ -728,7 +738,7 @@
                     NSLog(@"error:%@",output.error);
                 }
             });
-
+            //[_taskUploadVideo waitUtilFinished];
             
             
             
@@ -745,9 +755,9 @@
     VODProcessMediaRequest* request = [VODProcessMediaRequest new];
     request.mediaId = res.mediaID;
     request.attributes.mediaTitle = key;
-    request.attributes.mediaDescription = @"mov";
-    request.sourceExtension = @"MOV";
-    request.transcodingPresetGroupName = @"notranscoding";
+    request.attributes.mediaDescription = @"ios";
+    request.sourceExtension = @"mp4";
+    //request.transcodingPresetGroupName = @"notranscoding";
     
     BCETask *task = [_vodClient processMedia:request];
     task.then(^(BCEOutput* output) {

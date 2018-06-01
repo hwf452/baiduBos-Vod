@@ -24,8 +24,10 @@ typedef void (^NetWorkBlock)(BOOL netConnetState);
 //#define IP @"http://scctest.skyinno.com:8082/scc"
 
 #define IP @"https://vod.api.qcloud.com"
-
-#define IPSign @"http://23.105.208.7:8080"
+//美国洛杉矶服务器 搬瓦工
+//#define IPSign @"http://23.105.208.7:8080"
+//香港服务器 window server2008 rt2
+#define IPSign @"http://203.78.141.233:8080"
 
 
 

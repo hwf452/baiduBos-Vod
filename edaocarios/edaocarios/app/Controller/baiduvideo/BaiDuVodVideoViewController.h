@@ -86,6 +86,7 @@
 
 @property (nonatomic, strong)BOSClient* bosClient;
 
+@property (nonatomic, strong)BCETask* taskUploadVideo;
 
 
 //- (IBAction)videoQualitySgtClick:(id)sender;
